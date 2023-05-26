@@ -248,7 +248,6 @@ public:
 
     Queens(Board board_) : GameRules(), board(board_) {}
 
-
     // поставить фигуру
     bool Set(Figure figure, int coord) override
     {
@@ -289,24 +288,12 @@ public:
             {
                 return true;
             }
-
-
         }
         else
         {
             return false;
         }
     }
-
-    /*
-      override
-      { bool Move(Figure figure, int coord1, int coord2)
-         {
-           return true;
-         }
-      }
-     */
-
 };
 
 class Match
@@ -326,21 +313,11 @@ public:
         Match* match = new Match(queens);
         return match;
     }
-
-
-    /*
-       Match(Board board): gr(new Queens())
-       {
-
-       }
-    */
     // нужен будет еще конструктор копирования и оператор присваивания
     ~Match()
     {
         delete gr;
     }
-    // GameRules *gr = new Queens;
-    //  Board Play();
 };
 
 int main()
@@ -359,8 +336,5 @@ int main()
     std::cout << q << '\n';
     q = queens.Move(Figure(Queen), 0, 19);
     std::cout << q;
-    //   bool q = queens.Set('Q', 60);
-       // bool q = GameRules->M();
-       // GameRules->Move#include <cmath>
     return 0;
 }
