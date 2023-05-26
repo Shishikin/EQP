@@ -24,7 +24,12 @@ enum FigureType
     Empty = 'E' //нет фигуры
 };
 
-//вынести
+//проверка координаты, лежит ли она в заданном диапозоне
+bool CheckCoord(int coord, int limit)
+{
+    return (coord >= 0 && coord < limit);
+}
+
 
 //класс фигуры
 class Figure
@@ -34,7 +39,7 @@ private:
     FigureType type; //тип фигуры
 
 public:
-    //конструктор по умолчанию
+    //конструктор 
     Figure(FigureType figuretype) : color(white), type(figuretype) {}
 
     //дружественная функция (перегрузка <<) для вывода типа фигуры
@@ -192,14 +197,16 @@ Board::Board(int bsize) : size(bsize)
             }
         }
     }
-    for (int i = 0; i < size * 1.5; i++)
-    {
-        cells[i] = Cell(black, Queen);
-    }
-
+    /*
+        for (int i = 0; i < size * 1.5; i++)
+        {
+            cells[i] = Cell(black, Queen);
+        }
+    */
+    cells[0] = Cell(black, Queen);
 }
 
-// печать только доски, пока занятых клеток не печатает
+// печать только доски
 std::ostream& operator << (std::ostream& out, const Board& board)
 {
     out << "\n";
@@ -229,40 +236,68 @@ public:
     virtual bool Move(Figure figure, int coord1, int coord2) = 0;
     virtual bool Set(Figure figure, int coord) = 0;
     virtual bool Remove(Figure figure, int coord) = 0;
-    virtual bool Test() = 0;
 };
 
-class Queens : GameRules
+class Queens : public GameRules
 {
 private:
+
     Board board;
 
 public:
-    Queens(Board board_) : GameRules(), board(board_) {}
-    bool Move(Figure figure, int coord1, int coord2) override
-    {
-        int size = board.Size();
-        std::map<int, char > position = board.Position();
-        std::map <int, char> ::iterator it = position.begin();
-        for (; it != position.end(); it++)
-        {
-            if (it->first / size == coord1 / size || it->first % size == coord1 % size ||
-                (abs(it->first / size - coord1 / size) == abs(it->first % size - coord1 % size)))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
 
+    Queens(Board board_) : GameRules(), board(board_) {}
+
+
+    // поставить фигуру
     bool Set(Figure figure, int coord) override
     {
-        return true;
+        int size = board.Size();
+        if (figure.IsA(Queen) && CheckCoord(coord, size * size))
+        {
+            std::map<int, char > position = board.Position();
+            std::map <int, char> ::iterator it = position.begin();
+            for (; it != position.end(); it++)
+            {
+                if (it->first / size == coord / size || it->first % size == coord % size ||
+                    (abs(it->first / size - coord / size) == abs(it->first % size - coord % size)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
     }
+
     bool Remove(Figure figure, int coord) override
     {
         return true;
     }
+
+    //переместить фигуру
+    bool Move(Figure figure, int coord1, int coord2) override
+    {
+        int size = board.Size();
+        if (figure.IsA(Queen) && CheckCoord(coord1, size * size) && CheckCoord(coord2, size * size) && (coord1 != coord2))
+        {
+            if (board[coord1 / size][coord1 % size].CellFigure() == 'Q' && board[coord2 / size][coord2 % size].CellFigure() == 'E')
+            {
+                return true;
+            }
+
+
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     /*
       override
       { bool Move(Figure figure, int coord1, int coord2)
@@ -273,17 +308,41 @@ public:
      */
 
 };
-/*
+
 class Match
 {
+    //создать конструктор
 private:
-  GameRules *gr = new Queens;
+    GameRules* gr;
 
 public:
- // GameRules *gr = new Queens;
-   Board Play();
+
+    Match(GameRules* gr_) : gr(gr_)
+    {  }
+
+    static Match* CreateQueens(Board board)
+    {
+        GameRules* queens = new Queens(board);
+        Match* match = new Match(queens);
+        return match;
+    }
+
+
+    /*
+       Match(Board board): gr(new Queens())
+       {
+
+       }
+    */
+    // нужен будет еще конструктор копирования и оператор присваивания
+    ~Match()
+    {
+        delete gr;
+    }
+    // GameRules *gr = new Queens;
+    //  Board Play();
 };
-*/
+
 int main()
 {
 
@@ -295,7 +354,13 @@ int main()
     std::cout << checksymvol << '\n';
     std::map<int, char> Dictionary = board.Position();
     PrintPosition(Dictionary);
-    // bool q = GameRules->M();
-    // GameRules->Move#include <cmath>
+    Queens queens(board);
+    bool q = queens.Set(Figure(Queen), 19);
+    std::cout << q << '\n';
+    q = queens.Move(Figure(Queen), 0, 19);
+    std::cout << q;
+    //   bool q = queens.Set('Q', 60);
+       // bool q = GameRules->M();
+       // GameRules->Move#include <cmath>
     return 0;
 }
